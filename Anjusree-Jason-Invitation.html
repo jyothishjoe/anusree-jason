@@ -180,6 +180,7 @@ footer{background:var(--green);color:#cfe0d8;text-align:center;font-size:12px;fo
 <noscript><style>.rv{transform:none}</style></noscript>
 </head>
 <body>
+<noscript><div style="position:fixed;left:0;right:0;bottom:0;z-index:99;background:#f6e2b0;color:#1a1205;font:600 15px/1.5 sans-serif;text-align:center;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px))">This viewer has switched off scripts, so the countdown and some buttons are paused. Save this file, then open it in Chrome or Safari.</div></noscript>
 <div class="bar" id="bar"></div>
 
 <header id="top">
@@ -269,11 +270,12 @@ footer{background:var(--green);color:#cfe0d8;text-align:center;font-size:12px;fo
     <p class="eyebrow rv">Until the day we begin</p>
     <h2 class="rv">Counting down.</h2>
     <div class="count rv" role="timer" aria-label="Countdown to the wedding">
-      <div><b id="cd">0</b><span>Days</span></div>
-      <div><b id="ch">00</b><span>Hours</span></div>
-      <div><b id="cm">00</b><span>Minutes</span></div>
-      <div><b id="cs">00</b><span>Seconds</span></div>
+      <div><b id="cd">&ndash;</b><span>Days</span></div>
+      <div><b id="ch">&ndash;</b><span>Hours</span></div>
+      <div><b id="cm">&ndash;</b><span>Minutes</span></div>
+      <div><b id="cs">&ndash;</b><span>Seconds</span></div>
     </div>
+    <p class="lede" id="cdnote" style="margin-top:18px;min-height:1.7em"></p>
     <div class="panel rv"><div class="box">
       <div class="row"><p class="k">Date</p><p class="v">Saturday, 12 December 2026</p></div>
       <div class="row"><p class="k">Time</p><p class="v">10:00 AM</p></div>
@@ -315,6 +317,30 @@ footer{background:var(--green);color:#cfe0d8;text-align:center;font-size:12px;fo
 </div>
 
 <script>
+/* Countdown to Saturday 12 December 2026, 10:00 AM India time (04:30 UTC). Kept in its own script so nothing else can stop it. */
+(function(){
+  var TARGET=Date.UTC(2026,11,12,4,30,0);
+  var els={d:document.getElementById('cd'),h:document.getElementById('ch'),m:document.getElementById('cm'),s:document.getElementById('cs')};
+  var note=document.getElementById('cdnote');
+  function p2(n){return (n<10?'0':'')+n}
+  function tick(){
+    var left=TARGET-new Date().getTime();
+    if(left<0)left=0;
+    var t=Math.floor(left/1000);
+    els.d.textContent=Math.floor(t/86400);
+    els.h.textContent=p2(Math.floor(t%86400/3600));
+    els.m.textContent=p2(Math.floor(t%3600/60));
+    els.s.textContent=p2(t%60);
+    if(note){note.textContent=left===0?'The celebration has begun.':''}
+  }
+  tick();
+  setInterval(tick,1000);
+  document.addEventListener('visibilitychange',tick);
+  window.addEventListener('focus',tick);
+  window.addEventListener('pageshow',tick);
+})();
+</script>
+<script>
 (function(){
   var $=function(id){return document.getElementById(id)};
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -341,17 +367,6 @@ footer{background:var(--green);color:#cfe0d8;text-align:center;font-size:12px;fo
     },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
     items.forEach(function(el){io.observe(el)});
   }else{items.forEach(function(el){el.classList.add('on')})}
-
-  /* ---------- countdown to 12 Dec 2026, 10:00 IST ---------- */
-  var target=new Date('2026-12-12T10:00:00+05:30').getTime();
-  function tick(){
-    var s=Math.floor(Math.max(0,target-Date.now())/1000);
-    $('cd').textContent=Math.floor(s/86400);
-    $('ch').textContent=pad(Math.floor(s%86400/3600));
-    $('cm').textContent=pad(Math.floor(s%3600/60));
-    $('cs').textContent=pad(s%60);
-  }
-  tick(); setInterval(tick,1000);
 
   /* ---------- photo viewer ---------- */
   var lb=$('lb'), shots=[], cur=0, lastFocus=null;
